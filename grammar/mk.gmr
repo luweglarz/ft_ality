@@ -1,4 +1,10 @@
 x = Attack
-b = Block
-
-Attack = Attack someone
+y = Super
+z = BP
+w = BK
+-
+Attack = Ready to Attack
+Attack, BK = Power Kick
+Attack, BP, Super = Super Power Kick 
+Attack, BK = Power Punch
+Attack, BK, Super = Super Power Punch
