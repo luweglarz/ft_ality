@@ -8,26 +8,35 @@ use sdl2::keyboard::Keycode;
 use sdl2::image::LoadTexture;
 
 struct FiniteAutomata {
-    _keys: HashMap<char, String>,
-    _states: HashMap<String, Vec<String>>,
+    keys: HashMap<Keycode, String>,
+    states: HashMap<String, Vec<String>>,
     // current_state: ,
     // transitions: ,
 }
 
-fn event_loop(event_pump: &mut sdl2::EventPump) {
+fn combo_core(file_str: &str ,key: Keycode){
+    let automata = FiniteAutomata {
+        states: parsing::get_states(args::get_file_string(args::get_file_path(env::args()))),
+        keys: parsing::get_keys(args::get_file_string(args::get_file_path(env::args())))
+    };
+    println!("key: {}", key);
+    //if (automata.keys.contains_key(key))
+}
+
+fn event_loop(event_pump: &mut sdl2::EventPump, file_str: String) {
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} |
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'running,
-                Event::KeyDown { keycode: Some(key), .. } => println!("{:?}", key),
+                Event::KeyDown { keycode: Some(key), .. } => combo_core(&file_str, key),
                 _ => {}
             }
         }
     }
 }
 
-fn init_sdl() {
+fn init_sdl(file_str: String) {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
     let window = video_subsystem
@@ -42,15 +51,15 @@ fn init_sdl() {
     canvas.present();
 
     let mut event_pump = sdl_context.event_pump().unwrap();
-    event_loop(&mut event_pump)
+    event_loop(&mut event_pump, file_str)
 }
 
 fn main() {
-    let _automata = FiniteAutomata {
-        _states: parsing::get_states(args::get_file_string(args::get_file_path(env::args()))),
-        _keys: parsing::get_keys(args::get_file_string(args::get_file_path(env::args())))
-    };
+    // let _automata = FiniteAutomata {
+    //     _states: parsing::get_states(args::get_file_string(args::get_file_path(env::args()))),
+    //     _keys: parsing::get_keys(args::get_file_string(args::get_file_path(env::args())))
+    // };
 
-    init_sdl();
+    init_sdl(args::get_file_string(args::get_file_path(env::args())));
     
 }
