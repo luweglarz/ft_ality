@@ -6,37 +6,40 @@ use std::collections::HashMap;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::image::LoadTexture;
+use tailcall::tailcall;
 
 struct FiniteAutomata {
     keys: HashMap<Keycode, String>,
     states: HashMap<String, Vec<String>>,
-    // current_state: ,
-    // transitions: ,
 }
 
-fn combo_core(file_str: &str ,key: Keycode){
-    let automata = FiniteAutomata {
-        states: parsing::get_states(args::get_file_string(args::get_file_path(env::args()))),
-        keys: parsing::get_keys(args::get_file_string(args::get_file_path(env::args())))
-    };
-    println!("key: {}", key);
-    //if (automata.keys.contains_key(key))
+fn get_combo(combo_move: &str) -> Vec<String> {
+    vec![]
 }
 
-fn event_loop(event_pump: &mut sdl2::EventPump, file_str: String) {
-    'running: loop {
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit {..} |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'running,
-                Event::KeyDown { keycode: Some(key), .. } => combo_core(&file_str, key),
-                _ => {}
-            }
-        }
+fn combo_core(automata: &FiniteAutomata ,key: Keycode) -> Vec<String> {
+    match automata.keys.get(&key) {
+        Some(combo_move) => { get_combo(&combo_move)},
+        None => {vec![]}
     }
 }
 
-fn init_sdl(file_str: String) {
+#[tailcall] #[allow(unreachable_code)]
+fn event_loop(event_pump: &mut sdl2::EventPump, automata: &FiniteAutomata, actual_combos: Vec<String>) {
+    if let Some(event) = event_pump.poll_iter().next() {
+        match event {
+            Event::Quit {..} |
+            Event::KeyDown { keycode: Some(Keycode::Escape), .. } => return,
+            Event::KeyDown { keycode: Some(key), .. } => {
+                event_loop(event_pump, &automata, combo_core(&automata, key))
+            },
+            _ => {}
+        }
+    }
+    event_loop(event_pump, automata, vec![])
+}
+
+fn init_sdl(automata: FiniteAutomata) {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
     let window = video_subsystem
@@ -51,15 +54,15 @@ fn init_sdl(file_str: String) {
     canvas.present();
 
     let mut event_pump = sdl_context.event_pump().unwrap();
-    event_loop(&mut event_pump, file_str)
+    event_loop(&mut event_pump, &automata, vec![])
 }
 
 fn main() {
-    // let _automata = FiniteAutomata {
-    //     _states: parsing::get_states(args::get_file_string(args::get_file_path(env::args()))),
-    //     _keys: parsing::get_keys(args::get_file_string(args::get_file_path(env::args())))
-    // };
+    let automata = FiniteAutomata {
+        states: parsing::get_states(args::get_file_string(args::get_file_path(env::args()))),
+        keys: parsing::get_keys(args::get_file_string(args::get_file_path(env::args())))
+    };
 
-    init_sdl(args::get_file_string(args::get_file_path(env::args())));
+    init_sdl(automata);
     
 }
